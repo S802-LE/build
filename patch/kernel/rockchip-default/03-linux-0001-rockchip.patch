@@ -1,52 +1,3 @@
-From 502991ac8774b57ffd194c5b6eac7448e8bd0851 Mon Sep 17 00:00:00 2001
-From: Jonas Karlman <jonas@kwiboo.se>
-Date: Wed, 29 Mar 2017 23:51:09 +0200
-Subject: [PATCH] gpu/arm/midgard: default to performance gpu governor
-
----
- drivers/gpu/arm/midgard_for_linux/backend/gpu/mali_kbase_devfreq.c | 6 ++----
- drivers/gpu/arm/midgard_for_linux/mali_kbase_config_defaults.h     | 3 +--
- 2 files changed, 3 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/gpu/arm/midgard_for_linux/backend/gpu/mali_kbase_devfreq.c b/drivers/gpu/arm/midgard_for_linux/backend/gpu/mali_kbase_devfreq.c
-index 3c7fdeaa9542..105f03acc360 100644
---- a/drivers/gpu/arm/midgard_for_linux/backend/gpu/mali_kbase_devfreq.c
-+++ b/drivers/gpu/arm/midgard_for_linux/backend/gpu/mali_kbase_devfreq.c
-@@ -227,8 +227,7 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
- 	dp = &kbdev->devfreq_profile;
- 
- 	dp->initial_freq = kbdev->current_freq;
--	/* .KP : set devfreq_dvfs_interval_in_ms */
--	dp->polling_ms = 20;
-+	dp->polling_ms = 100;
- 	dp->target = kbase_devfreq_target;
- 	dp->get_dev_status = kbase_devfreq_status;
- 	dp->get_cur_freq = kbase_devfreq_cur_freq;
-@@ -243,8 +242,7 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
- 			     &kbdev->ondemand_data.downdifferential);
- 
- 	kbdev->devfreq = devfreq_add_device(kbdev->dev, dp,
--				"simple_ondemand",
--				&kbdev->ondemand_data);
-+				"performance", NULL);
- 	if (IS_ERR(kbdev->devfreq)) {
- 		kbase_devfreq_term_freq_table(kbdev);
- 		return PTR_ERR(kbdev->devfreq);
-diff --git a/drivers/gpu/arm/midgard_for_linux/mali_kbase_config_defaults.h b/drivers/gpu/arm/midgard_for_linux/mali_kbase_config_defaults.h
-index 9b00cce9b2b3..739ac83b484f 100644
---- a/drivers/gpu/arm/midgard_for_linux/mali_kbase_config_defaults.h
-+++ b/drivers/gpu/arm/midgard_for_linux/mali_kbase_config_defaults.h
-@@ -157,8 +157,7 @@ enum {
- /*
-  * Default period for DVFS sampling
-  */
--// #define DEFAULT_PM_DVFS_PERIOD 100 /* 100ms */
--#define DEFAULT_PM_DVFS_PERIOD 20 /* 20 ms */
-+#define DEFAULT_PM_DVFS_PERIOD 100 /* 100ms */
- 
- /*
-  * Power Management poweroff tick granuality. This is in nanoseconds to
-
 From 87722719d86931a3c14bf3ccd3928adab015c7e0 Mon Sep 17 00:00:00 2001
 From: Jonas Karlman <jonas@kwiboo.se>
 Date: Mon, 17 Apr 2017 13:09:16 +0200
@@ -63,7 +14,7 @@ index 69bf5cf1e91e..00672a818145 100644
 @@ -3324,4 +3324,13 @@ AU0828_DEVICE(0x2040, 0x7270, "Hauppauge", "HVR-950Q"),
  	}
  },
- 
+
 +{
 +	USB_DEVICE(0x0bda, 0x481a),
 +	.driver_info = (unsigned long) &(const struct snd_usb_audio_quirk) {
@@ -90,7 +41,7 @@ index 06c83f017165..67ee9475b9a7 100644
 +++ b/drivers/gpu/arm/mali400/mali/linux/mali_devfreq.c
 @@ -251,7 +251,7 @@ int mali_devfreq_init(struct mali_device *mdev)
  		return -EFAULT;
- 
+
  	mdev->devfreq = devfreq_add_device(mdev->dev, dp,
 -					   "simple_ondemand", NULL);
 +					   "performance", NULL);
@@ -113,7 +64,7 @@ index 15dd40e2ce6c..6e014484b828 100644
 +++ b/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c
 @@ -508,9 +508,15 @@ dw_hdmi_rockchip_mode_valid(struct drm_connector *connector,
  		return MODE_BAD;
- 
+
  	hdmi = to_rockchip_hdmi(encoder);
 -	if (hdmi->dev_type == RK3368_HDMI && mode->clock > 340000 &&
 +	if ((hdmi->dev_type == RK3368_HDMI || hdmi->dev_type == RK3328_HDMI) &&
@@ -147,13 +98,13 @@ index 5ed021b432c5..8071afa4e271 100644
 @@ -1991,10 +1991,6 @@ static void hdmi_av_composer(struct dw_hdmi *hdmi,
  		HDMI_FC_INVIDCONF_IN_I_P_INTERLACED :
  		HDMI_FC_INVIDCONF_IN_I_P_PROGRESSIVE;
- 
+
 -	inv_val |= hdmi->sink_is_hdmi ?
 -		HDMI_FC_INVIDCONF_DVI_MODEZ_HDMI_MODE :
 -		HDMI_FC_INVIDCONF_DVI_MODEZ_DVI_MODE;
 -
  	hdmi_writeb(hdmi, inv_val, HDMI_FC_INVIDCONF);
- 
+
  	hdisplay = mode->hdisplay;
 @@ -2292,6 +2288,9 @@ static int dw_hdmi_setup(struct dw_hdmi *hdmi, struct drm_display_mode *mode)
  	/* not for DVI mode */
@@ -162,7 +113,7 @@ index 5ed021b432c5..8071afa4e271 100644
 +		hdmi_modb(hdmi, HDMI_FC_INVIDCONF_DVI_MODEZ_HDMI_MODE,
 +			  HDMI_FC_INVIDCONF_DVI_MODEZ_HDMI_MODE,
 +			  HDMI_FC_INVIDCONF);
- 
+
  		/* HDMI Initialization Step F - Configure AVI InfoFrame */
  		hdmi_config_AVI(hdmi, mode);
 
@@ -192,12 +143,12 @@ index e18693586972..d9845dc3b8da 100644
 -
 -		if (check_irq_err(task, dec_status))
 -			atomic_add(1, &pservice->reset_request);
- 
+
  		writel_relaxed(0, dev->regs + task->reg_irq);
- 
+
  		/* set clock gating to save power */
  		writel(task->gating_mask, dev->regs + task->reg_en);
- 
+
 +		if (check_irq_err(task, dec_status))
 +			atomic_add(1, &pservice->reset_request);
 +
@@ -221,7 +172,7 @@ index 8071afa4e271..fbeaecd0477d 100644
 @@ -147,6 +147,12 @@ static const u16 csc_coeff_rgb_in_eitu709[3][4] = {
  	{ 0x6756, 0x78ab, 0x2000, 0x0200 }
  };
- 
+
 +static const u16 csc_coeff_rgb_in_limited[3][4] = {
 +	{ 0x36f7, 0x0000, 0x0000, 0x0040 },
 +	{ 0x0000, 0x36f7, 0x0000, 0x0040 },
@@ -230,9 +181,9 @@ index 8071afa4e271..fbeaecd0477d 100644
 +
  struct hdmi_vmode {
  	bool mdataenablepolarity;
- 
+
 @@ -1006,7 +1012,9 @@ static void hdmi_video_sample(struct dw_hdmi *hdmi)
- 
+
  static int is_color_space_conversion(struct dw_hdmi *hdmi)
  {
 -	return hdmi->hdmi_data.enc_in_bus_format != hdmi->hdmi_data.enc_out_bus_format;
@@ -240,11 +191,11 @@ index 8071afa4e271..fbeaecd0477d 100644
 +	       (hdmi_bus_fmt_is_rgb(hdmi->hdmi_data.enc_in_bus_format) &&
 +	        hdmi_bus_fmt_is_rgb(hdmi->hdmi_data.enc_out_bus_format));
  }
- 
+
  static int is_color_space_decimation(struct dw_hdmi *hdmi)
 @@ -1040,7 +1048,11 @@ static void dw_hdmi_update_csc_coeffs(struct dw_hdmi *hdmi)
  	u32 csc_scale = 1;
- 
+
  	if (is_color_space_conversion(hdmi)) {
 -		if (hdmi_bus_fmt_is_rgb(hdmi->hdmi_data.enc_out_bus_format)) {
 +		if (hdmi_bus_fmt_is_rgb(hdmi->hdmi_data.enc_in_bus_format) &&
@@ -274,12 +225,12 @@ index 435eda863692..34158535547b 100644
  	uint32_t val;
  	bool rb_swap, global_alpha_en;
 +	int skip_lines = 0;
- 
+
  #if defined(CONFIG_ROCKCHIP_DRM_DEBUG)
  	bool AFBC_flag = false;
 @@ -1674,8 +1675,14 @@ static void vop_plane_atomic_update(struct drm_plane *plane,
  	}
- 
+
  	mode = &crtc->state->adjusted_mode;
 +
 +	/*
@@ -291,7 +242,7 @@ index 435eda863692..34158535547b 100644
 +		skip_lines = 1;
 +	actual_h = drm_rect_height(src) >> (16 + skip_lines);
  	act_info = (actual_h - 1) << 16 | ((actual_w - 1) & 0xffff);
- 
+
  	dsp_info = (drm_rect_height(dest) - 1) << 16;
 @@ -1697,10 +1704,10 @@ static void vop_plane_atomic_update(struct drm_plane *plane,
  	VOP_WIN_SET(vop, win, xmirror, xmirror);
@@ -323,7 +274,7 @@ index 0127d2a1d66f..55e88731c9c8 100644
 +++ b/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_devfreq.c
 @@ -341,8 +341,7 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
  	dp = &kbdev->devfreq_profile;
- 
+
  	dp->initial_freq = kbdev->current_freq;
 -	/* .KP : set devfreq_dvfs_interval_in_ms */
 -	dp->polling_ms = 20;
@@ -333,7 +284,7 @@ index 0127d2a1d66f..55e88731c9c8 100644
  	dp->get_cur_freq = kbase_devfreq_cur_freq;
 @@ -356,7 +355,7 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
  		return err;
- 
+
  	kbdev->devfreq = devfreq_add_device(kbdev->dev, dp,
 -				"simple_ondemand", NULL);
 +				"performance", NULL);
@@ -351,7 +302,7 @@ index 1cf44b3500cf..a6a1a52f0463 100644
 -// #define DEFAULT_PM_DVFS_PERIOD 100 /* 100ms */
 -#define DEFAULT_PM_DVFS_PERIOD 20 /* 20 ms */
 +#define DEFAULT_PM_DVFS_PERIOD 100 /* 100ms */
- 
+
  /*
   * Power Management poweroff tick granuality. This is in nanoseconds to
 
@@ -460,7 +411,7 @@ index 0161f80ab964..6cf391405ad6 100644
 +	{552750000, 552750000,  1,  737, 1, 2, 2, 1, 2, 3, 4, 0, 0},
  	{     ~0UL,	    0, 0,   0, 0, 0, 0,  0, 0, 0,  0, 0, 0}
  };
- 
+
 
 From 9f756dc8a7f1701102dc7884cfc9300ad3f6d59a Mon Sep 17 00:00:00 2001
 From: Jonas Karlman <jonas@kwiboo.se>
@@ -492,7 +443,7 @@ index dea6ce39cb04..b6e3f2866da4 100644
 +
  	return drate;
  }
- 
+
 
 From 541dc3d02f5a916d7920e22eee9ce4fc6dfae24f Mon Sep 17 00:00:00 2001
 From: Jonas Karlman <jonas@kwiboo.se>
@@ -517,7 +468,7 @@ index fbeaecd0477d..cb206c5c60bc 100644
 @@ -1869,7 +1869,7 @@ static void hdmi_config_hdr_infoframe(struct dw_hdmi *hdmi)
  		return;
  	}
- 
+
 -	hdmi_writeb(hdmi, 1, HDMI_FC_DRM_HB0);
 +	hdmi_writeb(hdmi, frame.version, HDMI_FC_DRM_HB0);
  	hdmi_writeb(hdmi, frame.length, HDMI_FC_DRM_HB1);
@@ -528,16 +479,16 @@ index bfe671071d9f..e3a0f561e8f0 100644
 --- a/drivers/gpu/drm/drm_edid.c
 +++ b/drivers/gpu/drm/drm_edid.c
 @@ -4735,10 +4735,10 @@ drm_hdmi_infoframe_set_hdr_metadata(struct hdmi_drm_infoframe *frame,
- 
+
  	hdr_source_metadata = (struct hdr_static_metadata *)hdr_metadata;
- 
+
 -	frame->length = sizeof(struct hdr_static_metadata);
 +	frame->length = 26;
- 
+
  	frame->eotf = hdr_source_metadata->eotf;
 -	frame->type = hdr_source_metadata->type;
 +	frame->metadata_type = hdr_source_metadata->type;
- 
+
  	for (i = 0; i < 3; i++) {
  		frame->display_primaries_x[i] =
 
@@ -561,7 +512,7 @@ index e3a0f561e8f0..f7d41950614e 100644
 -#define FUTURE_EOTF                    (0x1 << 3)
 +#define HYBRID_LOG_GAMMA               (0x1 << 3)
  #define RESERVED_EOTF                  (0x3 << 4)
- 
+
  #define STATIC_METADATA_TYPE1          (0x1 << 0)
 @@ -3710,6 +3710,8 @@ static uint16_t eotf_supported(const u8 *edid_ext)
  		val |= TRADITIONAL_GAMMA_HDR;
@@ -569,7 +520,7 @@ index e3a0f561e8f0..f7d41950614e 100644
  		val |= SMPTE_ST2084;
 +	if (edid_ext[2] & HYBRID_LOG_GAMMA)
 +		val |= HYBRID_LOG_GAMMA;
- 
+
  	return val;
  }
 
@@ -589,10 +540,10 @@ index cb206c5c60bc..5ca2b97aa9bf 100644
 @@ -1703,7 +1703,7 @@ static void hdmi_config_AVI(struct dw_hdmi *hdmi, struct drm_display_mode *mode)
  		break;
  	}
- 
+
 -	frame.scan_mode = HDMI_SCAN_MODE_NONE;
 +	frame.scan_mode = HDMI_SCAN_MODE_UNDERSCAN;
- 
+
  	/*
  	 * The Designware IP uses a different byte format from standard
 
@@ -648,13 +599,13 @@ index fb1c9ddc3478..9b3b9bd50d54 100644
 @@ -289,7 +294,8 @@ ifdef ASCIIDOC8
    export ASCIIDOC8
  endif
- 
+
 -LIBS = -Wl,--whole-archive $(PERFLIBS) -Wl,--no-whole-archive -Wl,--start-group $(EXTLIBS) -Wl,--end-group
 +EXTLIBS := $(call filter-out,$(EXCLUDE_EXTLIBS),$(EXTLIBS))
 +LIBS = -Wl,--whole-archive $(PERFLIBS) $(EXTRA_PERFLIBS) -Wl,--no-whole-archive -Wl,--start-group $(EXTLIBS) -Wl,--end-group
- 
+
  export INSTALL SHELL_PATH
- 
+
 
 From 33587d8b3af7107ce9877b024c8fb72d099bbb03 Mon Sep 17 00:00:00 2001
 From: Jonas Karlman <jonas@kwiboo.se>
@@ -685,7 +636,7 @@ index b4654d229634..48b6cf61d436 100644
 --- a/drivers/net/wireless/rockchip_wlan/rtl8723bs/os_dep/linux/sdio_intf.c
 +++ b/drivers/net/wireless/rockchip_wlan/rtl8723bs/os_dep/linux/sdio_intf.c
 @@ -45,6 +45,9 @@ static struct mmc_host *mmc_host = NULL;
- 
+
  static const struct sdio_device_id sdio_ids[] = {
  #ifdef CONFIG_RTL8723B
 +	{ SDIO_DEVICE(0x024c, 0x0523), .driver_data = RTL8723B},
@@ -734,7 +685,7 @@ index 060806eaf8d6..215200d5786c 100644
 --- a/drivers/spi/spi-rockchip.c
 +++ b/drivers/spi/spi-rockchip.c
 @@ -777,10 +777,10 @@ static int rockchip_spi_probe(struct platform_device *pdev)
- 
+
  	rs->high_speed_state = pinctrl_lookup_state(rs->dev->pins->p,
  						     "high_speed");
 -	if (IS_ERR_OR_NULL(rs->high_speed_state))
@@ -743,48 +694,7 @@ index 060806eaf8d6..215200d5786c 100644
 -	else
  		rs->high_speed_state = NULL;
 +	}
- 
+
  	ret = devm_spi_register_master(&pdev->dev, master);
  	if (ret) {
 
-From e11958d255577d7fdd55fc1faf3c07381a5ed466 Mon Sep 17 00:00:00 2001
-From: Jonas Karlman <jonas@kwiboo.se>
-Date: Sat, 2 Jun 2018 22:09:49 +0200
-Subject: [PATCH] Revert "clk: rockchip: fix up the freq overshoot"
-
-This reverts commit c64eb759a8e21c7a7c6980ee8f50e9f644c956fe.
----
- drivers/clk/rockchip/clk.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/drivers/clk/rockchip/clk.c b/drivers/clk/rockchip/clk.c
-index 15419bbb0ccb..a1c25a4f61ae 100644
---- a/drivers/clk/rockchip/clk.c
-+++ b/drivers/clk/rockchip/clk.c
-@@ -122,6 +122,7 @@ struct rockchip_clk_frac {
- 	const struct clk_ops			*mux_ops;
- 	int					mux_frac_idx;
- 
-+	bool					rate_change_remuxed;
- 	int					rate_change_idx;
- };
- 
-@@ -142,6 +143,18 @@ static int rockchip_clk_frac_notifier_cb(struct notifier_block *nb,
- 		frac->rate_change_idx = frac->mux_ops->get_parent(&frac_mux->hw);
- 		if (frac->rate_change_idx != frac->mux_frac_idx) {
- 			frac->mux_ops->set_parent(&frac_mux->hw, frac->mux_frac_idx);
-+			frac->rate_change_remuxed = 1;
-+		}
-+	} else if (event == POST_RATE_CHANGE) {
-+		/*
-+		 * The POST_RATE_CHANGE notifier runs directly after the
-+		 * divider clock is set in clk_change_rate, so we'll have
-+		 * remuxed back to the original parent before clk_change_rate
-+		 * reaches the mux itself.
-+		 */
-+		if (frac->rate_change_remuxed) {
-+			frac->mux_ops->set_parent(&frac_mux->hw, frac->rate_change_idx);
-+			frac->rate_change_remuxed = 0;
- 		}
- 	}
- 

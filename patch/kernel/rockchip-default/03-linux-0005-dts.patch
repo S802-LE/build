@@ -16,7 +16,7 @@ index a5c5300797ab..b999669c3ec7 100644
  #include "rk3288-rkisp1.dtsi"
  #include "rk3288-linux.dtsi"
 +#include "rk3288cg-opp.dtsi"
- 
+
  / {
  	compatible = "rockchip,rk3288-miniarm", "rockchip,rk3288";
 @@ -67,7 +68,7 @@
@@ -29,14 +29,14 @@ index a5c5300797ab..b999669c3ec7 100644
  		WIFI,host_wake_irq = <&gpio4 30 GPIO_ACTIVE_HIGH>;
  		status = "okay";
 @@ -131,14 +132,14 @@
- 
+
  		led1-led {
  			gpios=<&gpio1 25 GPIO_ACTIVE_HIGH>;
 -			linux,default-trigger="default-off";
 +			linux,default-trigger="heartbeat";
  		};
  	};
- 
+
  	sound {
  		compatible = "simple-audio-card";
  		simple-audio-card,format = "i2s";
@@ -60,16 +60,16 @@ index a5c5300797ab..b999669c3ec7 100644
 -	status = "ok";
 +	status = "okay";
  };
- 
+
  &dsi0 {
 @@ -545,6 +546,7 @@
- 
+
  &i2s {
  	#sound-dai-cells = <0>;
 +	rockchip,bclk-fs = <128>;
  	status = "okay";
  };
- 
+
 @@ -568,7 +570,7 @@
  	non-removable;
  	num-slots = <1>;
@@ -127,12 +127,12 @@ index a2862c6a17f1..3f621d887576 100644
 -		 */
 -
  	};
- 
+
  	ext_gmac: external-gmac-clock {
 @@ -182,9 +167,23 @@
  	cpu0-supply = <&vdd_cpu>;
  };
- 
+
 +&cpu0_opp_table {
 +	opp-1704000000 {
 +		opp-hz = /bits/ 64 <1704000000>;
@@ -151,7 +151,7 @@ index a2862c6a17f1..3f621d887576 100644
  	mali-supply = <&vdd_gpu>;
 +	power-off-delay-ms = <200>;
  };
- 
+
  &emmc {
 @@ -204,6 +203,12 @@
  	#size-cells = <0>;
@@ -164,7 +164,7 @@ index a2862c6a17f1..3f621d887576 100644
 +		};
 +	};
  };
- 
+
  &hevc_service {
 @@ -235,14 +240,14 @@
  	clock_in_out = "input";
@@ -181,18 +181,18 @@ index a2862c6a17f1..3f621d887576 100644
 -	status = "ok";
 +	status = "okay";
  };
- 
+
  /* ----------------------------------------------------------------------------------
 @@ -414,6 +419,7 @@ I2C
- 
+
  &i2s {
  	#sound-dai-cells = <0>;
 +	rockchip,bclk-fs = <128>;
  	status = "okay";
  };
- 
+
 @@ -472,6 +478,10 @@ I2C
- 
+
  &vopl {
  	status = "okay";
 +	/* Don't use vopl for HDMI */
@@ -200,203 +200,8 @@ index a2862c6a17f1..3f621d887576 100644
 +		/delete-node/ endpoint@0;
 +	};
  };
- 
+
  &vopl_mmu {
-
-From 610bdfe95a3a05803f35a8056a8a0e49514ade30 Mon Sep 17 00:00:00 2001
-From: Jonas Karlman <jonas@kwiboo.se>
-Date: Wed, 17 Jan 2018 22:17:45 +0100
-Subject: [PATCH] arm64: dts: rockchip: rk3328: update dtsi
-
----
- arch/arm64/boot/dts/rockchip/rk3328.dtsi | 65 +++++++++++++++++++++++---------
- 1 file changed, 48 insertions(+), 17 deletions(-)
-
-diff --git a/arch/arm64/boot/dts/rockchip/rk3328.dtsi b/arch/arm64/boot/dts/rockchip/rk3328.dtsi
-index 6ed8f40b1116..ab5275aa2698 100644
---- a/arch/arm64/boot/dts/rockchip/rk3328.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3328.dtsi
-@@ -88,6 +88,8 @@
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a53", "arm,armv8";
- 			reg = <0x0 0x1>;
-+			clocks = <&cru ARMCLK>;
-+			dynamic-power-coefficient = <120>;
- 			enable-method = "psci";
- 			operating-points-v2 = <&cpu0_opp_table>;
- 		};
-@@ -95,6 +97,8 @@
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a53", "arm,armv8";
- 			reg = <0x0 0x2>;
-+			clocks = <&cru ARMCLK>;
-+			dynamic-power-coefficient = <120>;
- 			enable-method = "psci";
- 			operating-points-v2 = <&cpu0_opp_table>;
- 		};
-@@ -102,6 +106,8 @@
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a53", "arm,armv8";
- 			reg = <0x0 0x3>;
-+			clocks = <&cru ARMCLK>;
-+			dynamic-power-coefficient = <120>;
- 			enable-method = "psci";
- 			operating-points-v2 = <&cpu0_opp_table>;
- 		};
-@@ -161,6 +167,22 @@
- 			opp-microvolt-L1 = <1300000 1300000 1325000>;
- 			clock-latency-ns = <40000>;
- 		};
-+		/*
-+		opp-1392000000 {
-+			opp-hz = /bits/ 64 <1392000000>;
-+			opp-microvolt = <1350000 1350000 1350000>;
-+			opp-microvolt-L0 = <1350000 1350000 1350000>;
-+			opp-microvolt-L1 = <1325000 1325000 1350000>;
-+			clock-latency-ns = <40000>;
-+		};
-+		opp-1512000000 {
-+			opp-hz = /bits/ 64 <1512000000>;
-+			opp-microvolt = <1350000 1350000 1350000>;
-+			opp-microvolt-L0 = <1350000 1350000 1350000>;
-+			opp-microvolt-L1 = <1325000 1325000 1350000>;
-+			clock-latency-ns = <40000>;
-+		};
-+		*/
- 	};
- 
- 	arm-pmu {
-@@ -186,7 +208,7 @@
- 	};
- 
- 	psci {
--		compatible = "arm,psci-1.0";
-+		compatible = "arm,psci-1.0", "arm,psci-0.2";
- 		method = "smc";
- 	};
- 
-@@ -454,7 +476,7 @@
- 		reg = <0x0 0xff120000 0x0 0x100>;
- 		interrupts = <GIC_SPI 56 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&cru SCLK_UART1>, <&cru PCLK_UART1>;
--		clock-names = "sclk_uart", "pclk_uart";
-+		clock-names = "baudclk", "apb_pclk";
- 		reg-shift = <2>;
- 		reg-io-width = <4>;
- 		dmas = <&dmac 4>, <&dmac 5>;
-@@ -707,15 +729,15 @@
- 
- 		opp-200000000 {
- 			opp-hz = /bits/ 64 <200000000>;
--			opp-microvolt = <925000>;
--			opp-microvolt-L0 = <925000>;
--			opp-microvolt-L1 = <900000>;
-+			opp-microvolt = <1050000>;
-+			opp-microvolt-L0 = <1050000>;
-+			opp-microvolt-L1 = <1025000>;
- 		};
- 		opp-300000000 {
- 			opp-hz = /bits/ 64 <300000000>;
--			opp-microvolt = <975000>;
--			opp-microvolt-L0 = <975000>;
--			opp-microvolt-L1 = <950000>;
-+			opp-microvolt = <1050000>;
-+			opp-microvolt-L0 = <1050000>;
-+			opp-microvolt-L1 = <1025000>;
- 		};
- 		opp-400000000 {
- 			opp-hz = /bits/ 64 <400000000>;
-@@ -729,6 +751,12 @@
- 			opp-microvolt-L0 = <1125000>;
- 			opp-microvolt-L1 = <1100000>;
- 		};
-+		opp-600000000 {
-+			opp-hz = /bits/ 64 <600000000>;
-+			opp-microvolt = <1150000>;
-+			opp-microvolt-L0 = <1150000>;
-+			opp-microvolt-L1 = <1125000>;
-+		};
- 	};
- 
- 	vdpu: vpu_service@ff350000 {
-@@ -852,7 +880,7 @@
- 		interrupts = <GIC_SPI 74 IRQ_TYPE_LEVEL_HIGH>;
- 		interrupt-names = "rkvdec_mmu";
- 		clocks = <&cru ACLK_RKVDEC>, <&cru HCLK_RKVDEC>;
--		clock-names = "aclk_vcodec", "hclk_vcodec";
-+		clock-names = "aclk", "hclk";
- 		power-domains = <&power RK3328_PD_VIDEO>;
- 		#iommu-cells = <0>;
- 	};
-@@ -930,6 +958,8 @@
- 	vop: vop@ff370000 {
- 		compatible = "rockchip,rk3328-vop";
- 		reg = <0x0 0xff370000 0x0 0x3efc>;
-+		reg-names = "regs", "gamma_lut";
-+		rockchip,grf = <&grf>;
- 		interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&cru ACLK_VOP>, <&cru DCLK_LCDC>, <&cru HCLK_VOP>;
- 		clock-names = "aclk_vop", "dclk_vop", "hclk_vop";
-@@ -1233,10 +1263,10 @@
- 	sdmmc: dwmmc@ff500000 {
- 		compatible = "rockchip,rk3328-dw-mshc", "rockchip,rk3288-dw-mshc";
- 		reg = <0x0 0xff500000 0x0 0x4000>;
--		clock-freq-min-max = <400000 150000000>;
-+		max-frequency = <150000000>;
- 		clocks = <&cru HCLK_SDMMC>, <&cru SCLK_SDMMC>,
- 			 <&cru SCLK_SDMMC_DRV>, <&cru SCLK_SDMMC_SAMPLE>;
--		clock-names = "biu", "ciu", "ciu-drv", "ciu-sample";
-+		clock-names = "biu", "ciu", "ciu-drive", "ciu-sample";
- 		fifo-depth = <0x100>;
- 		interrupts = <GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>;
- 		status = "disabled";
-@@ -1245,10 +1275,10 @@
- 	sdio: dwmmc@ff510000 {
- 		compatible = "rockchip,rk3328-dw-mshc", "rockchip,rk3288-dw-mshc";
- 		reg = <0x0 0xff510000 0x0 0x4000>;
--		clock-freq-min-max = <400000 150000000>;
-+		max-frequency = <150000000>;
- 		clocks = <&cru HCLK_SDIO>, <&cru SCLK_SDIO>,
- 			 <&cru SCLK_SDIO_DRV>, <&cru SCLK_SDIO_SAMPLE>;
--		clock-names = "biu", "ciu", "ciu-drv", "ciu-sample";
-+		clock-names = "biu", "ciu", "ciu-drive", "ciu-sample";
- 		fifo-depth = <0x100>;
- 		interrupts = <GIC_SPI 13 IRQ_TYPE_LEVEL_HIGH>;
- 		status = "disabled";
-@@ -1257,10 +1287,10 @@
- 	emmc: dwmmc@ff520000 {
- 		compatible = "rockchip,rk3328-dw-mshc", "rockchip,rk3288-dw-mshc";
- 		reg = <0x0 0xff520000 0x0 0x4000>;
--		clock-freq-min-max = <400000 150000000>;
-+		max-frequency = <150000000>;
- 		clocks = <&cru HCLK_EMMC>, <&cru SCLK_EMMC>,
- 			 <&cru SCLK_EMMC_DRV>, <&cru SCLK_EMMC_SAMPLE>;
--		clock-names = "biu", "ciu", "ciu-drv", "ciu-sample";
-+		clock-names = "biu", "ciu", "ciu-drive", "ciu-sample";
- 		fifo-depth = <0x100>;
- 		interrupts = <GIC_SPI 14 IRQ_TYPE_LEVEL_HIGH>;
- 		status = "disabled";
-@@ -1282,6 +1312,7 @@
- 			      "pclk_mac";
- 		resets = <&cru SRST_GMAC2IO_A>;
- 		reset-names = "stmmaceth";
-+		snps,force_thresh_dma_mode;
- 		status = "disabled";
- 	};
- 
-@@ -1352,10 +1383,10 @@
- 	sdmmc_ext: dwmmc@ff5f0000 {
- 		compatible = "rockchip,rk3328-dw-mshc", "rockchip,rk3288-dw-mshc";
- 		reg = <0x0 0xff5f0000 0x0 0x4000>;
--		clock-freq-min-max = <400000 150000000>;
-+		max-frequency = <150000000>;
- 		clocks = <&cru HCLK_SDMMC_EXT>, <&cru SCLK_SDMMC_EXT>,
- 			 <&cru SCLK_SDMMC_EXT_DRV>, <&cru SCLK_SDMMC_EXT_SAMPLE>;
--		clock-names = "biu", "ciu", "ciu-drv", "ciu-sample";
-+		clock-names = "biu", "ciu", "ciu-drive", "ciu-sample";
- 		fifo-depth = <0x100>;
- 		interrupts = <GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>;
- 		status = "disabled";
 
 From f0951864ba5e7fc80698226bdb343d3731cae64a Mon Sep 17 00:00:00 2001
 From: Jonas Karlman <jonas@kwiboo.se>
@@ -413,13 +218,13 @@ index ea8cd77333a8..62ceaeb16820 100644
 +++ b/arch/arm64/boot/dts/rockchip/rk3328-rock64.dts
 @@ -48,20 +48,15 @@
  	compatible = "pine64,rock64", "rockchip,rk3328";
- 
+
  	chosen {
 -		bootargs = "rockchip_jtag earlyprintk=uart8250-32bit,0xff130000";
 +		bootargs = "earlyprintk=uart8250-32bit,0xff130000";
  		stdout-path = "serial2:1500000n8";
  	};
- 
+
 -	fiq-debugger {
 -		compatible = "rockchip,fiq-debugger";
 -		rockchip,serial-id = <2>;
@@ -436,12 +241,12 @@ index ea8cd77333a8..62ceaeb16820 100644
 +		clock-output-names = "xin32k";
 +		#clock-cells = <0>;
  	};
- 
+
  	gmac_clkin: external-gmac-clock {
 @@ -71,9 +66,25 @@
  		#clock-cells = <0>;
  	};
- 
+
 +	vcc_phy: vcc-phy-regulator {
 +		compatible = "regulator-fixed";
 +		regulator-name = "vcc_phy";
@@ -468,7 +273,7 @@ index ea8cd77333a8..62ceaeb16820 100644
 @@ -82,56 +93,59 @@
  		vin-supply = <&vcc_io>;
  	};
- 
+
 -	vcc_host_5v: vcc-host-5v-regulator {
 +	vcc_host_5v: vcc_host1_5v: vcc_otg_5v: vcc-host-5v-regulator {
  		compatible = "regulator-fixed";
@@ -484,7 +289,7 @@ index ea8cd77333a8..62ceaeb16820 100644
 +		regulator-max-microvolt = <5000000>;
  		vin-supply = <&vcc_sys>;
  	};
- 
+
 -	vcc_host1_5v: vcc_otg_5v: vcc-host1-5v-regulator {
 -		compatible = "regulator-fixed";
 -		enable-active-high;
@@ -497,7 +302,7 @@ index ea8cd77333a8..62ceaeb16820 100644
 -	};
 +	leds {
 +		compatible = "gpio-leds";
- 
+
 -	vcc_sys: vcc-sys {
 -		compatible = "regulator-fixed";
 -		regulator-name = "vcc_sys";
@@ -510,7 +315,7 @@ index ea8cd77333a8..62ceaeb16820 100644
 +			gpios = <&rk805 0 GPIO_ACTIVE_LOW>;
 +			linux,default-trigger = "heartbeat";
 +		};
- 
+
 -	xin32k: xin32k {
 -		compatible = "fixed-clock";
 -		clock-frequency = <32768>;
@@ -521,7 +326,7 @@ index ea8cd77333a8..62ceaeb16820 100644
 +			linux,default-trigger = "mmc0";
 +		};
  	};
- 
+
  	ir-receiver {
  		compatible = "gpio-ir-receiver";
 +		gpios = <&gpio2 RK_PA2 GPIO_ACTIVE_LOW>;
@@ -530,7 +335,7 @@ index ea8cd77333a8..62ceaeb16820 100644
  		pinctrl-names = "default";
  		status = "okay";
  	};
- 
+
 +	hdmi-sound {
 +		compatible = "simple-audio-card";
 +		simple-audio-card,format = "i2s";
@@ -556,7 +361,7 @@ index ea8cd77333a8..62ceaeb16820 100644
 @@ -140,18 +154,21 @@
  		};
  	};
- 
+
 -	hdmi-sound {
 +	spdif-sound {
  		compatible = "simple-audio-card";
@@ -579,12 +384,12 @@ index ea8cd77333a8..62ceaeb16820 100644
 +		#sound-dai-cells = <0>;
 +	};
  };
- 
+
  &codec {
 @@ -175,6 +192,15 @@
  	cpu-supply = <&vdd_arm>;
  };
- 
+
 +&dfi {
 +	status = "okay";
 +};
@@ -609,7 +414,7 @@ index ea8cd77333a8..62ceaeb16820 100644
  	vqmmc-supply = <&vcc18_emmc>;
  	status = "okay";
  };
- 
+
  &gmac2io {
 -	phy-supply = <&vcc_io>;
 -	phy-mode = "rgmii";
@@ -632,7 +437,7 @@ index ea8cd77333a8..62ceaeb16820 100644
 +	rx_delay = <0x18>;
  	status = "okay";
  };
- 
+
 +&gmac2phy {
 +	phy-supply = <&vcc_phy>;
 +	assigned-clocks = <&cru SCLK_MAC2PHY_SRC>;
@@ -647,14 +452,14 @@ index ea8cd77333a8..62ceaeb16820 100644
  	status = "okay";
  	mali-supply = <&vdd_logic>;
 @@ -223,6 +259,8 @@
- 
+
  &hdmi {
  	#sound-dai-cells = <0>;
 +	ddc-i2c-scl-high-time-ns = <9625>;
 +	ddc-i2c-scl-low-time-ns = <10000>;
  	status = "okay";
  };
- 
+
 @@ -239,14 +277,14 @@
  		reg = <0x18>;
  		interrupt-parent = <&gpio2>;
@@ -669,22 +474,22 @@ index ea8cd77333a8..62ceaeb16820 100644
 -		clock-output-names = "rk805-clkout1", "rk805-clkout2";
  		#gpio-cells = <2>;
 -		#clock-cells = <1>;
- 
+
  		vcc1-supply = <&vcc_sys>;
  		vcc2-supply = <&vcc_sys>;
 @@ -256,11 +294,11 @@
  		vcc6-supply = <&vcc_sys>;
- 
+
  		rtc {
 -			status = "disabled";
 +			status = "okay";
  		};
- 
+
  		pwrkey {
 -			status = "disabled";
 +			status = "okay";
  		};
- 
+
  		gpio {
 @@ -280,8 +318,8 @@
  				regulator-max-microvolt = <1450000>;
@@ -734,7 +539,7 @@ index ea8cd77333a8..62ceaeb16820 100644
 @@ -332,13 +371,13 @@
  				};
  			};
- 
+
 -			vdd_18: RK805_LDO1 {
 +			vcc_18: RK805_LDO1 {
  				regulator-compatible = "RK805_LDO1";
@@ -770,7 +575,7 @@ index ea8cd77333a8..62ceaeb16820 100644
  					regulator-suspend-microvolt = <1000000>;
 @@ -381,6 +420,16 @@
  };
- 
+
  &i2s1 {
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&i2s1_mclk
@@ -802,7 +607,7 @@ index ea8cd77333a8..62ceaeb16820 100644
 +			rockchip,pins = <2 RK_PA2 RK_FUNC_GPIO &pcfg_pull_none>;
  		};
  	};
- 
+
  	pmic {
  		pmic_int_l: pmic-int-l {
 -			rockchip,pins = <2 6 RK_FUNC_GPIO &pcfg_pull_up>;
@@ -821,7 +626,7 @@ index ea8cd77333a8..62ceaeb16820 100644
 +			rockchip,pins = <2 RK_PA6 RK_FUNC_GPIO &pcfg_pull_up>;
  		};
  	};
- 
+
 -	usb3 {
 -		usb30_host_drv: usb30-host-drv {
 -			rockchip,pins = <0 0 RK_FUNC_GPIO &pcfg_pull_none>;
@@ -831,12 +636,12 @@ index ea8cd77333a8..62ceaeb16820 100644
  		};
  	};
  };
- 
+
  &rkvdec {
  	status = "okay";
 +	vcodec-supply = <&vdd_logic>;
  };
- 
+
  &rkvdec_mmu {
 @@ -445,8 +483,15 @@
  	max-frequency = <150000000>;
@@ -854,7 +659,7 @@ index ea8cd77333a8..62ceaeb16820 100644
 +	pinctrl-0 = <&spdifm0_tx>;
  	status = "okay";
  };
- 
+
 @@ -461,12 +506,36 @@
  		m25p,fast-read;
  		/* The max SCLK of the flash 104/80 MHZ  */
@@ -872,7 +677,7 @@ index ea8cd77333a8..62ceaeb16820 100644
 +		};
  	};
  };
- 
+
 +&threshold {
 +	temperature = <80000>; /* millicelsius */
 +};
@@ -891,25 +696,25 @@ index ea8cd77333a8..62ceaeb16820 100644
 +	rockchip,hw-tshut-temp = <110000>;
  	status = "okay";
  };
- 
+
 @@ -490,15 +559,16 @@
  };
- 
+
  &u3phy {
 -	phy-supply = <&vcc_host_5v>;
  	status = "okay";
  };
- 
+
  &u3phy_utmi {
 +	phy-supply = <&vcc_host_5v>;
  	status = "okay";
  };
- 
+
  &u3phy_pipe {
 +	phy-supply = <&vcc_host_5v>;
  	status = "okay";
  };
- 
+
 
 From 65bcc45a131c6c350cab86b3611b704e9e11808b Mon Sep 17 00:00:00 2001
 From: Jonas Karlman <jonas@kwiboo.se>
@@ -2775,7 +2580,7 @@ index 62ceaeb16820..dcac0d5ff1a6 100644
 @@ -128,6 +128,11 @@
  		status = "okay";
  	};
- 
+
 +	dummy_codec: dummy-codec {
 +		compatible = "linux,snd-soc-dummy";
 +		#sound-dai-cells = <0>;
@@ -2785,7 +2590,7 @@ index 62ceaeb16820..dcac0d5ff1a6 100644
  		compatible = "simple-audio-card";
  		simple-audio-card,format = "i2s";
 @@ -143,14 +148,25 @@
- 
+
  	sound {
  		compatible = "simple-audio-card";
 -		simple-audio-card,format = "i2s";
@@ -2814,7 +2619,7 @@ index 62ceaeb16820..dcac0d5ff1a6 100644
 +			};
  		};
  	};
- 
+
 diff --git a/sound/soc/soc-utils.c b/sound/soc/soc-utils.c
 index 53dd085d3ee2..bf7ce34084a9 100644
 --- a/sound/soc/soc-utils.c
@@ -2824,13 +2629,13 @@ index 53dd085d3ee2..bf7ce34084a9 100644
  #include <sound/pcm_params.h>
  #include <sound/soc.h>
 +#include <linux/module.h>
- 
+
  int snd_soc_calc_frame_size(int sample_size, int channels, int tdm_slots)
  {
 @@ -160,9 +161,18 @@ static int snd_soc_dummy_remove(struct platform_device *pdev)
  	return 0;
  }
- 
+
 +#ifdef CONFIG_OF
 +static const struct of_device_id soc_dummy_ids[] = {
 +	{ .compatible = "linux,snd-soc-dummy", },
@@ -2876,7 +2681,7 @@ index cd0b377977ab..fadb35d978a9 100644
 @@ -426,12 +424,6 @@
  		};
  	};
- 
+
 -	sd-pwerset {
 -		sd_pwr_1800_sel: sd-pwr-1800-sel {
 -			rockchip,pins = <0 RK_PD1 RK_FUNC_GPIO &pcfg_pull_none>;
@@ -2900,7 +2705,7 @@ index cd0b377977ab..fadb35d978a9 100644
 -	vqmmc-supply = <&vccio_sd>;
  	status = "okay";
  };
- 
+
 
 From bea511f5e7f0f4a0a8ce3291558e24ef75ca77b0 Mon Sep 17 00:00:00 2001
 From: Jonas Karlman <jonas@kwiboo.se>
@@ -4100,7 +3905,7 @@ index 4a428bfed5e1..4ca840c5a3c0 100644
 @@ -1949,6 +1951,14 @@
  						 &pcfg_pull_none>;
  			};
- 
+
 +			hdmi_cec_c0: hdmi-cec-c0 {
 +				rockchip,pins = <7 16 RK_FUNC_2 &pcfg_pull_none>;
 +			};
@@ -5132,194 +4937,6 @@ index 000000000000..1bff86c2bf03
 +};
 +
 +&vpu {
-+	status = "okay";
-+};
-
-From 95b9512f7ee55cd03947452e4b67efc21c440a6e Mon Sep 17 00:00:00 2001
-From: Jonas Karlman <jonas@kwiboo.se>
-Date: Mon, 26 Feb 2018 23:39:15 +0100
-Subject: [PATCH] arm64: dts: rockchip: add rk3399-rockpro64 board
-
----
- arch/arm64/boot/dts/rockchip/rk3399-rockpro64.dts | 171 ++++++++++++++++++++++
- 1 file changed, 171 insertions(+)
- create mode 100644 arch/arm64/boot/dts/rockchip/rk3399-rockpro64.dts
-
-diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rockpro64.dts b/arch/arm64/boot/dts/rockchip/rk3399-rockpro64.dts
-new file mode 100644
-index 000000000000..0606771dbf5c
---- /dev/null
-+++ b/arch/arm64/boot/dts/rockchip/rk3399-rockpro64.dts
-@@ -0,0 +1,171 @@
-+/*
-+ * Copyright (c) 2017 Fuzhou Rockchip Electronics Co., Ltd
-+ *
-+ * This file is dual-licensed: you can use it either under the terms
-+ * of the GPL or the X11 license, at your option. Note that this dual
-+ * licensing only applies to this file, and not this project as a
-+ * whole.
-+ *
-+ *  a) This file is free software; you can redistribute it and/or
-+ *     modify it under the terms of the GNU General Public License as
-+ *     published by the Free Software Foundation; either version 2 of the
-+ *     License, or (at your option) any later version.
-+ *
-+ *     This file is distributed in the hope that it will be useful,
-+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *     GNU General Public License for more details.
-+ *
-+ * Or, alternatively,
-+ *
-+ *  b) Permission is hereby granted, free of charge, to any person
-+ *     obtaining a copy of this software and associated documentation
-+ *     files (the "Software"), to deal in the Software without
-+ *     restriction, including without limitation the rights to use,
-+ *     copy, modify, merge, publish, distribute, sublicense, and/or
-+ *     sell copies of the Software, and to permit persons to whom the
-+ *     Software is furnished to do so, subject to the following
-+ *     conditions:
-+ *
-+ *     The above copyright notice and this permission notice shall be
-+ *     included in all copies or substantial portions of the Software.
-+ *
-+ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-+ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-+ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-+ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-+ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-+ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-+ *     OTHER DEALINGS IN THE SOFTWARE.
-+ */
-+
-+/dts-v1/;
-+#include "rk3399-box.dtsi"
-+
-+/ {
-+	model = "Pine64 RockPro64";
-+	compatible = "pine64,rockpro64", "rockchip,rk3399";
-+};
-+
-+&pinctrl {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&cpt_gpio>;
-+
-+	sdio0 {
-+		sdio0_bus1: sdio0-bus1 {
-+			rockchip,pins =
-+				<2 20 RK_FUNC_1 &pcfg_pull_up_20ma>;
-+		};
-+
-+		sdio0_bus4: sdio0-bus4 {
-+			rockchip,pins =
-+				<2 20 RK_FUNC_1 &pcfg_pull_up_20ma>,
-+				<2 21 RK_FUNC_1 &pcfg_pull_up_20ma>,
-+				<2 22 RK_FUNC_1 &pcfg_pull_up_20ma>,
-+				<2 23 RK_FUNC_1 &pcfg_pull_up_20ma>;
-+		};
-+
-+		sdio0_cmd: sdio0-cmd {
-+			rockchip,pins =
-+				<2 24 RK_FUNC_1 &pcfg_pull_up_20ma>;
-+		};
-+
-+		sdio0_clk: sdio0-clk {
-+			rockchip,pins =
-+				<2 25 RK_FUNC_1 &pcfg_pull_none_20ma>;
-+		};
-+	};
-+
-+	sdmmc {
-+		sdmmc_bus1: sdmmc-bus1 {
-+			rockchip,pins =
-+				<4 8 RK_FUNC_1 &pcfg_pull_up_8ma>;
-+		};
-+
-+		sdmmc_bus4: sdmmc-bus4 {
-+			rockchip,pins =
-+				<4 8 RK_FUNC_1 &pcfg_pull_up_8ma>,
-+				<4 9 RK_FUNC_1 &pcfg_pull_up_8ma>,
-+				<4 10 RK_FUNC_1 &pcfg_pull_up_8ma>,
-+				<4 11 RK_FUNC_1 &pcfg_pull_up_8ma>;
-+		};
-+
-+		sdmmc_clk: sdmmc-clk {
-+			rockchip,pins =
-+				<4 12 RK_FUNC_1 &pcfg_pull_none_18ma>;
-+		};
-+
-+		sdmmc_cmd: sdmmc-cmd {
-+			rockchip,pins =
-+				<4 13 RK_FUNC_1 &pcfg_pull_up_8ma>;
-+		};
-+	};
-+
-+	fusb30x {
-+		fusb0_int: fusb0-int {
-+			rockchip,pins =
-+				<1 2 RK_FUNC_GPIO &pcfg_pull_up>;
-+		};
-+	};
-+
-+	compat {
-+		cpt_gpio: cpt-gpio {
-+			rockchip,pins =
-+				<1 18 RK_FUNC_GPIO &pcfg_output_low>;
-+		};
-+	};
-+};
-+
-+&i2c4 {
-+	status = "okay";
-+	fusb0: fusb30x@22 {
-+		compatible = "fairchild,fusb302";
-+		reg = <0x22>;
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&fusb0_int>;
-+		vbus-5v-gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
-+		int-n-gpios = <&gpio1 2 GPIO_ACTIVE_HIGH>;
-+		status = "okay";
-+	};
-+};
-+
-+&cdn_dp {
-+	status = "okay";
-+	extcon = <&fusb0>;
-+};
-+
-+&hdmi_in_vopl {
-+	status = "disabled";
-+};
-+
-+&dp_in_vopb {
-+	status = "disabled";
-+};
-+
-+&route_hdmi {
-+	status = "okay";
-+};
-+
-+&hdmi {
-+	status = "okay";
-+	rockchip,phy-table =
-+		<74250000 0x8009 0x0004 0x0272>,
-+		<165000000 0x802b 0x0004 0x0209>,
-+		<297000000 0x8039 0x0005 0x028d>,
-+		<594000000 0x8039 0x0000 0x019d>,
-+		<000000000 0x0000 0x0000 0x0000>;
-+};
-+
-+&pcie_phy {
-+	status = "okay";
-+};
-+
-+&pcie0 {
-+	ep-gpios = <&gpio1 0x18 0x0>;
-+	num-lanes = <4>;
-+	max-link-speed = <2>;
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pcie_clkreqn_cpm>;
 +	status = "okay";
 +};
 
@@ -6906,15 +6523,15 @@ index fadb35d978a9..d0db35366b68 100644
 --- a/arch/arm64/boot/dts/rockchip/rk3328-roc-cc.dts
 +++ b/arch/arm64/boot/dts/rockchip/rk3328-roc-cc.dts
 @@ -42,6 +42,7 @@
- 
+
  /dts-v1/;
  #include "rk3328.dtsi"
 +#include "rk3328-dram-box-plus-timing.dtsi"
- 
+
  / {
  	model = "Firefly ROC-RK3328-CC Board";
 @@ -194,7 +195,37 @@
- 
+
  &dmc {
  	center-supply = <&vdd_logic>;
 -	status = "okay";
@@ -6950,7 +6567,7 @@ index fadb35d978a9..d0db35366b68 100644
 +		opp-microvolt-L1 = <1175000>;
 +	};
  };
- 
+
  &display_subsystem {
 
 From 40bce30059e879f5e55085ef93553bf37dc80659 Mon Sep 17 00:00:00 2001
@@ -6968,15 +6585,15 @@ index bc43ff34004c..19751bc71d1d 100644
 --- a/arch/arm64/boot/dts/rockchip/rk3328-box-trn9.dts
 +++ b/arch/arm64/boot/dts/rockchip/rk3328-box-trn9.dts
 @@ -42,6 +42,7 @@
- 
+
  /dts-v1/;
  #include "rk3328.dtsi"
 +#include "rk3328-dram-box-plus-timing.dtsi"
- 
+
  / {
  	model = "Rockchip RK3328 TRN9";
 @@ -239,7 +240,33 @@
- 
+
  &dmc {
  	center-supply = <&vdd_logic>;
 -	status = "okay";
@@ -7008,5 +6625,5 @@ index bc43ff34004c..19751bc71d1d 100644
 +		opp-microvolt-L1 = <1175000>;
 +	};
  };
- 
+
  &display_subsystem {
