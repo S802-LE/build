@@ -1,4 +1,4 @@
-From 089ee4f9e21d7382d874947d9d6d9457b04b39f1 Mon Sep 17 00:00:00 2001
+From 1e7540d337ae794faf73e6c250073b28891b135e Mon Sep 17 00:00:00 2001
 From: Ziyuan Xu <xzy.xu@rock-chips.com>
 Date: Fri, 23 Sep 2016 13:43:18 +0800
 Subject: [PATCH] MINIARM: HACK: switch vccio_sd to 3.3v while shutdowning
@@ -46,7 +46,7 @@ index 1b4b62c4f91f..f3dd1fd99baf 100644
  		.name		= "dwmmc_rockchip",
  		.of_match_table	= dw_mci_rockchip_match,
 
-From 5e003fdf681015422c8f515b5ed78cfd0397baeb Mon Sep 17 00:00:00 2001
+From 321dbc2dadfcf094d2446a4c32d960d181d1290d Mon Sep 17 00:00:00 2001
 From: Ziyuan Xu <xzy.xu@rock-chips.com>
 Date: Mon, 6 Feb 2017 08:39:46 +0800
 Subject: [PATCH] MINIARM: HACK: mmc: dw_mmc-rockchip: enable vmmc supply for
@@ -87,7 +87,7 @@ index f3dd1fd99baf..12beb2d02d37 100644
  	if (!IS_ERR(mmc->supply.vqmmc))
  		regulator_set_voltage(mmc->supply.vqmmc, 3000000, 3300000);
 
-From 549c1a061d37dd4641ba7bc8bc0ef8435f5cf857 Mon Sep 17 00:00:00 2001
+From 5b81b3aa377e12b1a9fc43452a1b1ea539c00e40 Mon Sep 17 00:00:00 2001
 From: Jacob Chen <jacob-chen@iotwrt.com>
 Date: Sat, 22 Jul 2017 19:55:09 +0800
 Subject: [PATCH] MINIARM: drm/rockchip: update phy settings
@@ -113,7 +113,7 @@ index 15dd40e2ce6c..5a3dffc994c8 100644
  };
  
 
-From 98029847c1f8c309925c9cc49019852ca375d6a0 Mon Sep 17 00:00:00 2001
+From 5fc6a99341f846b858c1c0fbd345748ba51fc91c Mon Sep 17 00:00:00 2001
 From: Nickey Yang <nickey.yang@rock-chips.com>
 Date: Mon, 17 Jul 2017 16:35:34 +0800
 Subject: [PATCH] MINIARM: set npll be used for hdmi only
@@ -126,10 +126,10 @@ Signed-off-by: Nickey Yang <nickey.yang@rock-chips.com>
  2 files changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
-index 4a428bfed5e1..b42d873516dc 100644
+index cc19625d64ba..9a97c9906225 100644
 --- a/arch/arm/boot/dts/rk3288.dtsi
 +++ b/arch/arm/boot/dts/rk3288.dtsi
-@@ -1049,7 +1049,7 @@
+@@ -1050,7 +1050,7 @@
                                    <&cru PCLK_PERI>;
  		assigned-clock-rates = <594000000>,
  				       <500000000>, <300000000>,
@@ -138,7 +138,7 @@ index 4a428bfed5e1..b42d873516dc 100644
  				       <300000000>, <150000000>,
  				       <75000000>;
  	};
-@@ -1300,6 +1300,8 @@
+@@ -1301,6 +1301,8 @@
  		resets = <&cru SRST_LCDC0_AXI>, <&cru SRST_LCDC0_AHB>, <&cru SRST_LCDC0_DCLK>;
  		reset-names = "axi", "ahb", "dclk";
  		iommus = <&vopb_mmu>;
@@ -170,7 +170,7 @@ index d0ac6fa7738c..2d7fddf2fa46 100644
  			RK3288_CLKGATE_CON(3), 1, GFLAGS),
  	COMPOSITE(DCLK_VOP1, "dclk_vop1", mux_pll_src_cpll_gpll_npll_p, 0,
 
-From 838cad057d324e9a970004db64183f568ead8f2b Mon Sep 17 00:00:00 2001
+From 65d0e87a51758c9e7223057f85f851ad451e79c5 Mon Sep 17 00:00:00 2001
 From: Jonas Karlman <jonas@kwiboo.se>
 Date: Mon, 11 Dec 2017 23:09:54 +0100
 Subject: [PATCH] clk: rockchip: rk3288: add more pixel clock rates

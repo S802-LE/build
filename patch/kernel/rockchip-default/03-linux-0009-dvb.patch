@@ -1,4 +1,4 @@
-From b33b9d136f3a03528feb0d5160124ec2e068a74e Mon Sep 17 00:00:00 2001
+From b49dbbf8e2fbda02ffd4dd2ac38a7d99f3ee6e47 Mon Sep 17 00:00:00 2001
 From: Jakub Kicinski <jakub.kicinski@netronome.com>
 Date: Wed, 31 Aug 2016 12:46:44 +0100
 Subject: [PATCH] UPSTREAM: add basic register-field manipulation macros
@@ -167,7 +167,7 @@ index 7f4818673c41..edd3d8d3cd90 100644
  	BUILD_BUG_ON((n) == 0 || (((n) & ((n) - 1)) != 0))
  
 
-From 6483a211e314998bc12ebfad86a575d4eb8ee794 Mon Sep 17 00:00:00 2001
+From 03d608e526f6b3a59a31674d1e871c0ee3978cf0 Mon Sep 17 00:00:00 2001
 From: Jakub Kicinski <jakub.kicinski@netronome.com>
 Date: Thu, 9 Feb 2017 09:17:27 -0800
 Subject: [PATCH] UPSTREAM: bitfield.h: add FIELD_FIT() helper
@@ -207,7 +207,7 @@ index f6505d83069d..8b9d6fff002d 100644
   * FIELD_PREP() - prepare a bitfield element
   * @_mask: shifted mask defining the field's length and position
 
-From 337baca3866c7d52f719e92ba23e28293daed953 Mon Sep 17 00:00:00 2001
+From 5baadd8fd53a18644a055feba88e7058b100eb01 Mon Sep 17 00:00:00 2001
 From: Laurent Defert <laurent.defert@smartjog.com>
 Date: Wed, 11 Oct 2017 08:46:52 +0200
 Subject: [PATCH] FROMLIST: compat_ioctl: add compat handler for
@@ -219,7 +219,7 @@ https://patchwork.linuxtv.org/patch/8209/
  1 file changed, 138 insertions(+)
 
 diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-index dcf26537c935..fa4c59c2b3d3 100644
+index a52ca5cba015..438ce0c6851e 100644
 --- a/fs/compat_ioctl.c
 +++ b/fs/compat_ioctl.c
 @@ -223,6 +223,140 @@ static int do_video_set_spu_palette(unsigned int fd, unsigned int cmd,
